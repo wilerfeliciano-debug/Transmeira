@@ -91,8 +91,11 @@ async function processExpiredCalls(){
 }
 async function createSubstituteCalls(){
  const active=usersCache.filter(x=>x.role==="driver"&&x.active!==false&&x.name);
+ const now=Date.now();
  for(const shift of allShifts){
-  if(shift.checkedAt||!shift.substitute||Date.now()<deadline(shift)||shift.substituteNotifiedAt||String(shift.substituteStatus||"").includes("expirado")||shift.substituteStatus==="substituto não cadastrado")continue;
+  // Nunca convocar substitutos para jornadas de dias anteriores ou cuja partida já passou.
+  if(shift.date!==today()||now>=start(shift))continue;
+  if(shift.checkedAt||!shift.substitute||now<deadline(shift)||shift.substituteNotifiedAt||String(shift.substituteStatus||"").includes("expirado")||shift.substituteStatus==="substituto não cadastrado")continue;
   const wanted=nameKey(shift.substitute),matches=active.filter(d=>nameKey(d.name)===wanted);
   if(matches.length!==1){const message=matches.length===0?"substituto não cadastrado":"nome do substituto duplicado";try{await updateDoc(doc(db,"shifts",shift.id),{substituteStatus:message,substituteStatusUpdatedAt:serverTimestamp()});shift.substituteStatus=message}catch(e){console.error(e)}continue}
   const drv=matches[0],notificationId=shift.id+"_"+drv.id,now=Date.now();
