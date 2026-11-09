@@ -16,7 +16,7 @@
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,onAuthStateChanged,createUserWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,collection,query,where,getDocs,addDoc,updateDoc,setDoc,writeBatch,serverTimestamp,Timestamp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import{getFirestore,doc,getDoc,collection,query,where,getDocs,addDoc,updateDoc,setDoc,writeBatch,serverTimestamp,Timestamp,runTransaction}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyC-I4u3lJ4LxvtwSUO3lqBD4EWSKBR0qkI",authDomain:"transmeira-f0d47.firebaseapp.com",projectId:"transmeira-f0d47",storageBucket:"transmeira-f0d47.firebasestorage.app",messagingSenderId:"33795511759",appId:"1:33795511759:web:2cb48658fb2b9aa5bb2eba"};
 const ADMIN="transmeira-admin@transmeira.app",DEVICE="transmeira_device_v1",app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),creatorApp=initializeApp(cfg,"driverCreator"),creatorAuth=getAuth(creatorApp),$=id=>document.getElementById(id);let user=null,profile=null,shifts=[],allShifts=[],myShift=null,usersCache=[],credentialRows=[],rosterPage=0,driverNotifications=[]; const ROSTER_PAGE_SIZE=50;
 const escalaBase=[{"idNumber":"11","name":"ADÃO PEREIRA MENDES","vehicle":"6050","time":"04:00","route":"IHARA"},{"idNumber":"1","name":"ANTONIO CARLOS","vehicle":"5030","time":"05:30","route":"IDA TURISMO"},{"idNumber":"1","name":"ANTONIO CARLOS","vehicle":"5030","time":"16:30","route":"DAMATA"},{"idNumber":"17","name":"ARIOVALDO RODRIGUES SIMÕES JR","vehicle":"6060","time":"12:00","route":"METALFAST"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 01","time":"04:00","route":"TT STEEL"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 02","time":"04:00","route":"TT STEEL"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 03","time":"14:00","route":"TT STEEL"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 04","time":"05:00","route":"TT SR"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 05","time":"04:40","route":"TT SR - DVR"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 06","time":"05:30","route":"TT SR - PFZ"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 07","time":"23:50","route":"GPS"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 08","time":"05:30","route":"IHARA 2 X 2"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 09","time":"05:30","route":"IHARA 2 X 2"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 10","time":"05:30","route":"IHARA 2 X 2"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 12","time":"05:30","route":"IHARA 2 X 2"},{"idNumber":"22","name":"BETO","vehicle":"CARRO 13","time":"05:30","route":"IHARA 2 X 2"},{"idNumber":"1","name":"CARLOS ALBERTO DE LIMA","vehicle":"6010","time":"03:40","route":"WYDA"},{"idNumber":"8","name":"CARLOS ALBERTO PAES DA SILVA","vehicle":"6020","time":"05:45","route":"TTSR"},{"idNumber":"9","name":"CESAR AUGUSTO DA COSTA AMADO","vehicle":"780","time":"03:35","route":"IHARA"},{"idNumber":"19","name":"CLEITON CAMPOS ALMEIDA","vehicle":"610","time":"05:30","route":"INFRABRASIL"},{"idNumber":"1","name":"CLODOMIRO PINTO","vehicle":"5020","time":"03:40","route":"WYDA"},{"idNumber":"45","name":"EDMILSON DE CAMARGO","vehicle":"450","time":"04:40","route":"TGL"},{"idNumber":"51","name":"ELIEFERSON DE OLIVEIRA MARQUES","vehicle":"7030","time":"14:15","route":"TGL"},{"idNumber":"23","name":"ELITON JOSE DA SILVA","vehicle":"7060","time":"04:00","route":"METALFASTE"},{"idNumber":"49","name":"ERNANI MARCOS ASSUNÇÃO","vehicle":"7070","time":"05:50","route":"WYDA"},{"idNumber":"38","name":"ESDRAS ELIAS DA COSTA","vehicle":"6050","time":"16:20","route":"TTSR"},{"idNumber":"14","name":"EVANDRO TORRES","vehicle":"6040","time":"03:50","route":"IHARA"},{"idNumber":"40","name":"EVERTON ROCHA DE OLIV. PINHEIRO","vehicle":"7030","time":"04:50","route":"INFRABRASIL"},{"idNumber":"23","name":"EZEQUIEL CORREIA","vehicle":"VAN","time":"05:15","route":"TEIXEIRA D."},{"idNumber":"40","name":"GELSON APARECIDO MENDES","vehicle":"960","time":"05:25","route":"TGL"},{"idNumber":"1","name":"GILBERTO RAMOS","vehicle":"COROLLA","time":"06:10","route":"INFRABRASIL"},{"idNumber":"1","name":"GILBERTO RAMOS","vehicle":"6010","time":"23:50","route":"WYDA"},{"idNumber":"1","name":"JAIME PAES DA SILVA","vehicle":"PLANTÃO","time":"08:00","route":"PLANTÃO"},{"idNumber":"3","name":"JAIR ALMEIDA FILHO","vehicle":"920","time":"06:00","route":"IHARA"},{"idNumber":"3","name":"JEFFERSON ANTONIO ARANTES","vehicle":"930","time":"06:00","route":"TT STEEL"},{"idNumber":"18","name":"JESSE MIGGNOTTI VITOR","vehicle":"5010","time":"17:15","route":"IHARA"},{"idNumber":"4","name":"JOSE ALDO VIEIRA DA SILVA","vehicle":"6030","time":"03:30","route":"TTSR"},{"idNumber":"4","name":"JOSE CARLOS CARDOSO","vehicle":"7090","time":"03:55","route":"WYDA"},{"idNumber":"5","name":"JOSE ROBERTO","vehicle":"VAN","time":"06:00","route":"CAMPARI"},{"idNumber":"12","name":"MACELO HENRIQUE DO NASCIMENTO","vehicle":"7050","time":"04:00","route":"TT STEEL"},{"idNumber":"1","name":"MARCUS FABIO PROENÇA","vehicle":"VAN","time":"12:15","route":"INFRABRASIL"},{"idNumber":"6","name":"MARIO DE ALMEIDA","vehicle":"7130","time":"03:40","route":"WYDA"},{"idNumber":"4","name":"REYNALDO COSTA","vehicle":"7120","time":"04:25","route":"INFRABRASIL"},{"idNumber":"10","name":"RICARDO AP. CAMARGO SALVADOR","vehicle":"920","time":"20:35","route":"IHARA"},{"idNumber":"4","name":"ROBINSON DE OLIVEIRA FONSECA","vehicle":"7010","time":"04:00","route":"WYDA"},{"idNumber":"16","name":"RODRIGO LORENA DE LIMA","vehicle":"5010","time":"04:00","route":"IHARA"},{"idNumber":"31","name":"WALDIR DE LIMA","vehicle":"7030","time":"13:30","route":"TGL"},{"idNumber":"15","name":"WILHIAN HENRIQUE A. DO NASCIMENTO","vehicle":"6040","time":"16:10","route":"IHARA 2 X 2"},{"idNumber":"7","name":"ZENILTON ADRIANO CAETANO","vehicle":"7020","time":"04:50","route":"INFRABRASIL"}];
@@ -60,13 +60,13 @@ $("substituteAlerts").addEventListener("click",async e=>{
   if(accept){
    const now=Date.now(),end=n.responseDeadline?.toDate?n.responseDeadline.toDate().getTime():0;
    if(end&&now>=end){alert("O prazo para responder terminou. O administrador precisa escolher o próximo passo.");await loadSubstituteNotifications();return}
-   await updateDoc(doc(db,"notifications",n.id),{status:"accepted",respondedAt:serverTimestamp(),respondedBy:user.uid});
+   await updateDoc(doc(db,"notifications",n.id),{status:"accepted",respondedAt:serverTimestamp(),respondedBy:user.uid,checkinDeadline:Timestamp.fromDate(new Date(Date.now()+5*60*1000))});
    alert("Recebimento confirmado. Agora faça o check-in da viagem em até 5 minutos para assumir a responsabilidade.");
   }else{
    const fresh=await getDoc(doc(db,"shifts",n.shiftId));if(!fresh.exists())throw new Error("A jornada não foi encontrada.");const sh=fresh.data();
    const end=n.checkinDeadline?.toDate?n.checkinDeadline.toDate().getTime():0;
    if(n.status!=="accepted"||sh.substituteUid!==user.uid||sh.checkedAt|| (end&&Date.now()>=end)){alert("Esta convocação não está mais disponível. Atualize o aplicativo e procure o administrador.");await loadSubstituteNotifications();return}
-   await updateDoc(doc(db,"shifts",n.shiftId),{checkedAt:serverTimestamp(),checkedBy:user.uid,assignedDriverUid:user.uid,assignedDriverName:profile.name||n.targetName||"Substituto",substituteStatus:"assumida",substituteCheckedAt:serverTimestamp(),substituteCheckedBy:user.uid});
+   await updateDoc(doc(db,"shifts",n.shiftId),{checkedAt:serverTimestamp(),checkedBy:user.uid,assignedDriverUid:user.uid,assignedDriverName:n.targetName,substituteStatus:"assumida",substituteCheckedAt:serverTimestamp(),substituteCheckedBy:user.uid});
    alert("Check-in confirmado. A responsabilidade pela viagem agora é sua.");
   }
   await loadSubstituteNotifications();
@@ -74,35 +74,55 @@ $("substituteAlerts").addEventListener("click",async e=>{
 });
 async function processExpiredCalls(){
  const ns=await getDocs(collection(db,"notifications"));const now=Date.now();
- for(const nd of ns.docs){const n={id:nd.id,...nd.data()};if(n.type!=="substitute_call"||!n.shiftId)continue;
+ for(const nd of ns.docs){
+  const n={id:nd.id,...nd.data()};if(n.type!=="substitute_call"||!n.shiftId)continue;
   try{
-   // Migra convocações antigas que não tinham prazos nem o vínculo direto com a jornada.
-   if(["pending","accepted"].includes(n.status)&&(!n.checkinDeadline||(n.status==="pending"&&!n.responseDeadline))){
-    const responseDeadline=n.responseDeadline||(n.status==="pending"?Timestamp.fromDate(new Date(now+5*60*1000)):null);
-    const checkinDeadline=n.checkinDeadline||Timestamp.fromDate(new Date(now+(n.status==="pending"?10:5)*60*1000));
-    const patch={checkinDeadline};if(responseDeadline)patch.responseDeadline=responseDeadline;await updateDoc(doc(db,"notifications",n.id),patch);n.checkinDeadline=checkinDeadline;n.responseDeadline=responseDeadline;
-    const linked=allShifts.find(x=>x.id===n.shiftId);if(linked&&!linked.substituteNotificationId){await updateDoc(doc(db,"shifts",linked.id),{substituteNotificationId:n.id});linked.substituteNotificationId=n.id}
+   // Convocações antigas: recuperar o prazo a partir do registro original, nunca a partir de agora.
+   if(n.status==="pending"&&!n.responseDeadline){
+    const created=n.createdAt?.toDate?n.createdAt.toDate().getTime():0;
+    if(created){n.responseDeadline=Timestamp.fromDate(new Date(created+5*60*1000));await updateDoc(doc(db,"notifications",n.id),{responseDeadline:n.responseDeadline});}
    }
-   const responseEnd=n.responseDeadline?.toDate?n.responseDeadline.toDate().getTime():0,checkinEnd=n.checkinDeadline?.toDate?n.checkinDeadline.toDate().getTime():0;
-   if(n.status==="pending"&&responseEnd&&now>=responseEnd){await updateDoc(doc(db,"notifications",n.id),{status:"expired",expiredAt:serverTimestamp()});const si=allShifts.find(x=>x.id===n.shiftId);if(si&&!si.checkedAt){await updateDoc(doc(db,"shifts",n.shiftId),{substituteStatus:"prazo de resposta expirado",substituteStatusUpdatedAt:serverTimestamp()});si.substituteStatus="prazo de resposta expirado"}}
-   else if(n.status==="accepted"&&checkinEnd&&now>=checkinEnd){const sr=await getDoc(doc(db,"shifts",n.shiftId));if(sr.exists()&&!sr.data().checkedAt){await updateDoc(doc(db,"notifications",n.id),{status:"checkin_expired",expiredAt:serverTimestamp()});await updateDoc(doc(db,"shifts",n.shiftId),{substituteStatus:"prazo de check-in do substituto expirado",substituteStatusUpdatedAt:serverTimestamp()});const si=allShifts.find(x=>x.id===n.shiftId);if(si)si.substituteStatus="prazo de check-in do substituto expirado"}}
+   if(n.status==="accepted"&&!n.checkinDeadline){
+    const responded=n.respondedAt?.toDate?n.respondedAt.toDate().getTime():0;
+    if(responded){n.checkinDeadline=Timestamp.fromDate(new Date(responded+5*60*1000));await updateDoc(doc(db,"notifications",n.id),{checkinDeadline:n.checkinDeadline});}
+    else {n.checkinDeadline=Timestamp.fromDate(new Date(0));}
+   }
+   const responseEnd=n.responseDeadline?.toDate?n.responseDeadline.toDate().getTime():0;
+   const checkinEnd=n.checkinDeadline?.toDate?n.checkinDeadline.toDate().getTime():0;
+   if(n.status==="pending"&&(!responseEnd||now>=responseEnd)){
+    await updateDoc(doc(db,"notifications",n.id),{status:"expired",expiredAt:serverTimestamp()});
+    const si=allShifts.find(x=>x.id===n.shiftId);
+    if(si&&!si.checkedAt){await updateDoc(doc(db,"shifts",n.shiftId),{substituteStatus:"prazo de resposta expirado",substituteStatusUpdatedAt:serverTimestamp()});si.substituteStatus="prazo de resposta expirado";}
+   }else if(n.status==="accepted"&&(!checkinEnd||now>=checkinEnd)){
+    const sr=await getDoc(doc(db,"shifts",n.shiftId));
+    if(sr.exists()&&!sr.data().checkedAt){
+     await updateDoc(doc(db,"notifications",n.id),{status:"checkin_expired",expiredAt:serverTimestamp()});
+     await updateDoc(doc(db,"shifts",n.shiftId),{substituteStatus:"prazo de check-in do substituto expirado",substituteStatusUpdatedAt:serverTimestamp()});
+     const si=allShifts.find(x=>x.id===n.shiftId);if(si)si.substituteStatus="prazo de check-in do substituto expirado";
+    }
+   }
   }catch(e){console.error("Falha ao processar prazo da convocação",e)}
  }
 }
 async function createSubstituteCalls(){
  const active=usersCache.filter(x=>x.role==="driver"&&x.active!==false&&x.name);
- const now=Date.now();
  for(const shift of allShifts){
-  // Nunca convocar substitutos para jornadas de dias anteriores ou cuja partida já passou.
+  const now=Date.now();
   if(shift.date!==today()||now>=start(shift))continue;
-  if(shift.checkedAt||!shift.substitute||now<deadline(shift)||shift.substituteNotifiedAt||String(shift.substituteStatus||"").includes("expirado")||shift.substituteStatus==="substituto não cadastrado")continue;
+  if(shift.checkedAt||!shift.substitute||now<deadline(shift)||shift.substituteNotifiedAt||shift.substituteUid||String(shift.substituteStatus||"").includes("expirado")||shift.substituteStatus==="substituto não cadastrado")continue;
   const wanted=nameKey(shift.substitute),matches=active.filter(d=>nameKey(d.name)===wanted);
   if(matches.length!==1){const message=matches.length===0?"substituto não cadastrado":"nome do substituto duplicado";try{await updateDoc(doc(db,"shifts",shift.id),{substituteStatus:message,substituteStatusUpdatedAt:serverTimestamp()});shift.substituteStatus=message}catch(e){console.error(e)}continue}
-  const drv=matches[0],notificationId=shift.id+"_"+drv.id,now=Date.now();
+  const drv=matches[0],notificationRef=doc(collection(db,"notifications")),shiftRef=doc(db,"shifts",shift.id);
   try{
-   await setDoc(doc(db,"notifications",notificationId),{type:"substitute_call",targetUid:drv.id,targetName:drv.name,shiftId:shift.id,driverName:shift.driverName||"Motorista escalado",date:shift.date||"",time:shift.time||"",vehicle:shift.vehicle||"",route:shift.route||"",status:"pending",createdAt:serverTimestamp(),responseDeadline:Timestamp.fromDate(new Date(now+5*60*1000)),checkinDeadline:Timestamp.fromDate(new Date(now+10*60*1000))});
-   await updateDoc(doc(db,"shifts",shift.id),{substituteUid:drv.id,substituteNotificationId:notificationId,substituteNotifiedAt:serverTimestamp(),substituteStatus:"convocado"});
-   shift.substituteUid=drv.id;shift.substituteNotificationId=notificationId;shift.substituteNotifiedAt=true;shift.substituteStatus="convocado";
+   await runTransaction(db,async tx=>{
+    const fresh=await tx.get(shiftRef);
+    if(!fresh.exists())return;
+    const current=fresh.data(),nowTx=Date.now();
+    if(current.checkedAt||current.substituteUid||current.substituteNotifiedAt||current.date!==today()||nowTx<deadline(current)||nowTx>=start(current)||nameKey(current.substitute||"")!==wanted)return;
+    tx.set(notificationRef,{type:"substitute_call",targetUid:drv.id,targetName:drv.name,shiftId:shift.id,driverName:current.driverName||"Motorista escalado",date:current.date||"",time:current.time||"",vehicle:current.vehicle||"",route:current.route||"",status:"pending",createdAt:serverTimestamp(),responseDeadline:Timestamp.fromDate(new Date(nowTx+5*60*1000))});
+    tx.update(shiftRef,{substituteUid:drv.id,substituteNotificationId:notificationRef.id,substituteNotifiedAt:serverTimestamp(),substituteStatus:"convocado"});
+   });
+   const fresh=await getDoc(shiftRef);if(fresh.exists()){const current=fresh.data();Object.assign(shift,current);}
   }catch(e){console.error("Falha ao registrar convocação",e);notice("Não foi possível registrar uma convocação de substituto. Verifique as regras de segurança do Firestore.")}
  }
 }
@@ -135,7 +155,7 @@ function renderRoster(){
  rows.sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.time||"").localeCompare(b.time||"")||(a.driverName||"").localeCompare(b.driverName||"","pt-BR"));
  const total=rows.length,pages=Math.max(1,Math.ceil(total/ROSTER_PAGE_SIZE));rosterPage=Math.min(rosterPage,pages-1);
  const visible=rows.slice(rosterPage*ROSTER_PAGE_SIZE,(rosterPage+1)*ROSTER_PAGE_SIZE);
- $("roster").innerHTML=visible.map(s=>"<tr><td>"+safe(s.date||"—")+"</td><td>"+safe(s.assignedDriverName||s.driverName||"Motorista")+(s.assignedDriverName?"<br><small>Original: "+safe(s.driverName||"—")+"</small>":"")+"</td><td>"+safe(s.time||"—")+"</td><td>"+safe(s.vehicle||"—")+"<br>"+safe(s.route||"—")+"</td><td>"+safe(s.substitute||"Não informado")+(s.substituteStatus?"<br><small>Convocação: "+safe(s.substituteStatus==="convocado"?(s.callResponse==="accepted"?(s.checkedBy===s.substituteUid?"Viagem assumida pelo substituto":"Recebida; aguardando check-in"):"aguardando resposta"):s.substituteStatus)+"</small>":"")+"</td><td>"+(shiftStatus(s)==="confirmed"?"Confirmado":shiftStatus(s)==="late"?"Sem check-in no prazo":"Aguardando")+"</td><td><button type='button' class='secondary editSubstituteBtn' data-id='"+safe(s.id)+"'>Trocar</button></td></tr>").join("");
+ $("roster").innerHTML=visible.map(s=>"<tr><td>"+safe(s.date||"—")+"</td><td>"+safe(s.assignedDriverName||s.driverName||"Motorista")+(s.assignedDriverName?"<br><small>Original: "+safe(s.driverName||"—")+"</small>":"")+"</td><td>"+safe(s.time||"—")+"</td><td>"+safe(s.vehicle||"—")+"<br>"+safe(s.route||"—")+"</td><td>"+safe(s.substitute||"Não informado")+(s.substituteStatus?"<br><small>Convocação: "+safe(s.substituteStatus==="convocado"?(s.callResponse==="accepted"?(s.checkedBy===s.substituteUid?"Viagem assumida pelo substituto":"Recebida; aguardando check-in"):s.callResponse==="expired"?"Convocação expirada — escolha outro substituto":"Aguardando resposta"):s.substituteStatus)+"</small>":"")+"</td><td>"+(shiftStatus(s)==="confirmed"?"Confirmado":shiftStatus(s)==="late"?"Sem check-in no prazo":"Aguardando")+"</td><td><button type='button' class='secondary editSubstituteBtn' data-id='"+safe(s.id)+"'>Trocar</button></td></tr>").join("");
  $("empty").classList.toggle("hidden",total>0);
  $("rosterSummary").textContent=total+" jornada(s) encontrada(s)."+(view==="today"?" Exibindo apenas hoje.":view==="date"?" Data selecionada: "+(chosenDate||"selecione uma data")+".":" Exibindo todas as datas cadastradas.");
  $("rosterPageInfo").textContent="Página "+(rosterPage+1)+" de "+pages;
